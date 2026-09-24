@@ -24,6 +24,47 @@ test.describe('Game Listing and Navigation', () => {
     });
   });
 
+  test('should filter games by category and publisher', async ({ page }) => {
+    await page.goto('/');
+
+    await test.step('Filter by category', async () => {
+      await page.getByTestId('category-filter-Strategy').check();
+      const cards = page.locator('[data-testid="game-card"]:not([hidden])');
+      await expect(cards).toHaveCount(4);
+      await expect(page).toHaveURL(/category=Strategy/);
+    });
+
+    await test.step('Combine category and publisher filters', async () => {
+      await page.getByTestId('publisher-filter').selectOption({ label: 'CodeForge Studios' });
+      const cards = page.locator('[data-testid="game-card"]:not([hidden])');
+      await expect(cards).toHaveCount(1);
+      await expect(page).toHaveURL(/category=Strategy.*publisher=CodeForge\+Studios/);
+      await expect(page.getByTestId('games-result-count')).toContainText('game');
+    });
+  });
+
+  test('should hydrate filters from the URL and clear them', async ({ page }) => {
+    await page.goto('/?category=Puzzle&publisher=GitHub%20Games');
+
+    await expect(page.getByTestId('category-filter-Puzzle')).toBeChecked();
+    await expect(page.getByTestId('publisher-filter')).toHaveValue('GitHub Games');
+    await expect(page.getByTestId('clear-filters')).toBeEnabled();
+
+    await page.getByTestId('clear-filters').click();
+    await expect(page).toHaveURL('/');
+    await expect(page.getByTestId('category-filter-Puzzle')).not.toBeChecked();
+    await expect(page.getByTestId('publisher-filter')).toHaveValue('');
+    await expect(page.getByTestId('games-result-count')).toContainText('21 games found');
+  });
+
+  test('should show an empty state when filters have no matches', async ({ page }) => {
+    await page.goto('/?category=NotARealCategory&publisher=GitHub%20Games');
+
+    await expect(page.getByTestId('filtered-empty-state')).toBeVisible();
+    await expect(page.getByTestId('games-grid')).toBeHidden();
+    await expect(page.getByTestId('games-result-count')).toHaveText('0 games found');
+  });
+
   test('should navigate to correct game details page when clicking on a game', async ({ page }) => {
     let gameId: string | null;
     let gameTitle: string | null;
