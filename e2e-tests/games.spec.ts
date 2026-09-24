@@ -24,6 +24,18 @@ test.describe('Game Listing and Navigation', () => {
     });
   });
 
+  test('should display publisher avatars on game cards', async ({ page }) => {
+    await page.goto('/');
+
+    const firstCard = page.getByTestId('game-card').first();
+    const avatar = firstCard.getByTestId('game-card-avatar');
+
+    await expect(avatar).toBeVisible();
+    await expect(avatar).toHaveAttribute('role', 'img');
+    await expect(avatar).toHaveAttribute('aria-label', /avatar$/);
+    await expect(avatar).not.toBeEmpty();
+  });
+
   test('should filter games by category and publisher', async ({ page }) => {
     await page.goto('/');
 

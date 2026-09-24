@@ -1,0 +1,27 @@
+---
+interface Props {
+    label: string;
+    size?: 'sm' | 'md';
+}
+
+const { label, size = 'md' } = Astro.props;
+const initials = label
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word[0]?.toUpperCase() ?? '')
+    .join('');
+const sizeClasses = size === 'sm' ? 'h-8 w-8 text-xs' : 'h-10 w-10 text-sm';
+---
+
+<span
+    class:list={[
+        'inline-flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 font-bold text-white ring-2 ring-slate-700',
+        sizeClasses,
+    ]}
+    role="img"
+    aria-label={`${label} avatar`}
+    data-testid="game-card-avatar"
+>
+    {initials || '?'}
+</span>
